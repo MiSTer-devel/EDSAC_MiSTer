@@ -76,7 +76,7 @@ begin
    
    differential_value <= {pcm[10] ? pr_step : 12'd0} + {pcm[9] ? (pr_step>>1) : 12'd0} + {pcm[8] ? (pr_step>>2) : 12'd0} + (pr_step>>3);
 
-   if ($signed(estimation) > $signed(2047))        sample <= 12'd2047;
+   if ($signed(estimation) > $signed(2047))        sample <=  12'd2047;
    else if ($signed(estimation) < $signed(-2048))  sample <= -12'd2048;
    else                                            sample <= estimation;  
    
