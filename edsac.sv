@@ -163,10 +163,10 @@ reg [1:0] active_mode;
 
 wire clk_vid, clk_sys;
 
-video_pll pll (
-        .refclk(CLK_50M),
-        .rst(0),
-        .outclk_0(clk_vid)        
+pll pll (
+	.refclk(CLK_50M),
+	.rst(0),
+	.outclk_0(clk_vid)        
 );
 
 assign clk_sys = CLK_50M;
@@ -233,7 +233,7 @@ edsac_cpu cpu(
    .clock(clk_sys),
    .cpu_addr_out(cpu_addr_out),
    .memory_wren(memory_wren),
-   .cpu_data_out(cpu_data_out[34:0]),
+   .cpu_data_out(cpu_data_out),
    .memory_in(memory_in[34:0]),
    .enable(cpu_enable),
    .resume(cpu_resume),
@@ -263,7 +263,7 @@ edsac_cpu cpu(
 ///////////////////////////////////////////////////
 
 wire [35:0] memory_in;
-wire [35:0] cpu_data_out;
+wire [34:0] cpu_data_out;
 wire [8:0]  cpu_addr_out;
 wire memory_wren;
 
@@ -274,7 +274,7 @@ edsac_memory ram(
    .byteena_b(4'b1111),
    .clock_a(clk_sys),
    .clock_b(clk_vid),
-   .data_a(cpu_data_out),
+   .data_a({1'b0, cpu_data_out}),
    .data_b({1'b0, bstrap_data}),
    .wren_a(memory_wren),
    .wren_b(write_bootloader),
@@ -324,7 +324,7 @@ reg [12:0] snd_wait = 0;
 reg [15:0] soundlib_addr;
 
 wire [3:0] sound_adpcm;
-wire [12:0] adpcm_out;
+wire [11:0] adpcm_out;
 
 /* Memory that holds compressed samples */
 sound_lib soundlib (
@@ -397,7 +397,7 @@ begin
    end         
       
    if(cpu_reset || ioctl_download) begin
-      tape_ram_addr <= {13{1'b1}};                                                              // On next (first) read strobe the address will overflow to 0
+      tape_ram_addr <= '1;                                                                      // On next (first) read strobe the address will overflow to 0
    end
 	
    else if(~old_tape_read_strobe && tape_read_strobe) begin
@@ -500,7 +500,7 @@ always @(posedge clk_vid) begin
    
    if(hc == 11'd1623) begin                                               // End of horizontal line, both visible and blanking
       hc <= 11'd0;
-      vc <= (vc == 11'd764) ? 0 : vc + 1'd1;                              // End of vertical frame, both visible and blanking
+      vc <= (vc == 11'd764) ? 11'd0 : vc + 1'd1;                          // End of vertical frame, both visible and blanking
    end
 
    if(hc == 11'd1390) HSync <= 1'b1;                                      // Horizontal sync impulse
